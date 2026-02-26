@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  app:
+    image: php:8.3-fpm-alpine
+    container_name: garnet-app
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    networks:
+      - garnet-network
+    depends_on:
+      - mysql
+      - redis
+
+  nginx:
+    image: nginx:alpine
+    container_name: garnet-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - garnet-network
+    depends_on:
+      - app
+
+  mysql:
+    image: mysql:8.0
+    container_name: garnet-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: sail
+      MYSQL_PASSWORD: password
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - garnet-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: garnet-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - garnet-network
+
+networks:
+  garnet-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  redis-data:
