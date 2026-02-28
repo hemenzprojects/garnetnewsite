@@ -33,45 +33,113 @@ cd "$DEPLOY_DIR"
 
 echo -e "\n${GREEN}[1/3] Setting up Docker environment...${NC}"
 if [ ! -f ".env.production" ]; then
-    cp .env.production.example .env.production
-    echo -e "${YELLOW}Created .env.production from template${NC}"
-    echo -e "${YELLOW}Please edit this file with secure passwords!${NC}"
+    # Generate random passwords (alphanumeric only to avoid sed issues)
+    DB_ROOT_PASS=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
+    DB_PASS=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
+    REDIS_PASS=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
 
-    # Generate random passwords
-    DB_ROOT_PASS=$(openssl rand -base64 32)
-    DB_PASS=$(openssl rand -base64 32)
-    REDIS_PASS=$(openssl rand -base64 32)
+    # Create .env.production directly
+    cat > .env.production << EOF
+# Production Environment Variables for Docker Compose
+DB_ROOT_PASSWORD=${DB_ROOT_PASS}
+DB_DATABASE=garnet_db
+DB_USERNAME=garnet_user
+DB_PASSWORD=${DB_PASS}
+REDIS_PASSWORD=${REDIS_PASS}
+WWWGROUP=1000
+WWWUSER=1000
+EOF
 
-    sed -i "s/CHANGE_ME_STRONG_ROOT_PASSWORD/$DB_ROOT_PASS/" .env.production
-    sed -i "s/CHANGE_ME_STRONG_DB_PASSWORD/$DB_PASS/" .env.production
-    sed -i "s/CHANGE_ME_REDIS_PASSWORD/$REDIS_PASS/" .env.production
-
-    echo -e "${GREEN}✓ Generated secure random passwords${NC}"
+    echo -e "${GREEN}✓ Created .env.production with secure passwords${NC}"
 else
     echo -e "${YELLOW}.env.production already exists, skipping...${NC}"
+    # Get existing passwords
+    DB_PASS=$(grep "^DB_PASSWORD=" .env.production | cut -d '=' -f2)
+    REDIS_PASS=$(grep "^REDIS_PASSWORD=" .env.production | cut -d '=' -f2)
 fi
 
 echo -e "\n${GREEN}[2/3] Setting up Laravel environment...${NC}"
 if [ ! -f "backend/.env" ]; then
-    cp backend/.env.production.example backend/.env
-    echo -e "${YELLOW}Created backend/.env from template${NC}"
-
     # Get passwords from .env.production
     DB_PASS=$(grep "^DB_PASSWORD=" .env.production | cut -d '=' -f2)
     REDIS_PASS=$(grep "^REDIS_PASSWORD=" .env.production | cut -d '=' -f2)
 
-    # Update backend/.env with matching passwords
-    sed -i "s/CHANGE_ME_STRONG_DB_PASSWORD/$DB_PASS/" backend/.env
-    sed -i "s/CHANGE_ME_REDIS_PASSWORD/$REDIS_PASS/" backend/.env
+    # Create backend/.env with passwords already filled in
+    cat > backend/.env << EOF
+APP_NAME=GARNET
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+APP_TIMEZONE=Africa/Accra
+APP_URL=https://www2.garnet.edu.gh
 
-    echo -e "${GREEN}✓ Configured with matching passwords${NC}"
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=en_US
+
+APP_MAINTENANCE_DRIVER=file
+
+BCRYPT_ROUNDS=12
+
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=error
+
+# Database - Container names
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=garnet_db
+DB_USERNAME=garnet_user
+DB_PASSWORD=${DB_PASS}
+
+# Session & Cache
+SESSION_DRIVER=redis
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=.garnet.edu.gh
+
+BROADCAST_CONNECTION=log
+FILESYSTEM_DISK=public
+QUEUE_CONNECTION=redis
+
+CACHE_STORE=redis
+CACHE_PREFIX=
+
+# Redis - Container name
+REDIS_CLIENT=phpredis
+REDIS_HOST=redis
+REDIS_PASSWORD=${REDIS_PASS}
+REDIS_PORT=6379
+
+# Mail Configuration
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@garnet.edu.gh"
+MAIL_FROM_NAME="\${APP_NAME}"
+
+# Vite
+VITE_APP_NAME="\${APP_NAME}"
+EOF
+
+    echo -e "${GREEN}✓ Created backend/.env with matching passwords${NC}"
 else
     echo -e "${YELLOW}backend/.env already exists, skipping...${NC}"
 fi
 
 echo -e "\n${GREEN}[3/3] Setting up Frontend environment...${NC}"
 if [ ! -f "frontend/.env" ]; then
-    cp frontend/.env.production.example frontend/.env
+    # Create frontend/.env directly
+    cat > frontend/.env << EOF
+NUXT_PUBLIC_API_BASE=https://www2.garnet.edu.gh/api/v1
+NODE_ENV=production
+EOF
     echo -e "${GREEN}✓ Created frontend/.env${NC}"
 else
     echo -e "${YELLOW}frontend/.env already exists, skipping...${NC}"

@@ -8,10 +8,10 @@
 
 ## My SSH Public Key:
 
-Please add this to my user account:
+Please add this SSH public key to my user account:
 
 ```
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1yrMGzsSvqiLnRQxMD7tP8IMnMxIl/k8z6KBkwjz8M michaelhimenguk@gmail.com
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILFoMx6EBLKKTfq+8gJuNJROnloXJJwAhl5VLVOPX9/e hemenmike@gmail.com
 ```
 
 ---

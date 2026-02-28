@@ -45,6 +45,8 @@ services:
     image: mysql:8.0
     container_name: garnet_mysql
     restart: unless-stopped
+    ports:
+      - "3306:3306"  # Expose MySQL port for external access (TablePlus, etc.)
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_DATABASE:-garnet_db}

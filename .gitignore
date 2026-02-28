@@ -1,0 +1,49 @@
+# Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Frontend
+frontend/node_modules/
+frontend/.nuxt/
+frontend/.output/
+frontend/dist/
+frontend/.next/
+
+# Backend
+backend/vendor/
+backend/node_modules/
+backend/.env
+backend/.env.backup
+backend/storage/*.key
+backend/.phpunit.result.cache
+backend/Homestead.json
+backend/Homestead.yaml
+backend/auth.json
+
+# Logs
+*.log
+backend/storage/logs/*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment files (use .example instead)
+.env
+.env.production
+backend/.env
+frontend/.env
+
+# Build artifacts
+dist/
+build/
+.output/
